@@ -2163,6 +2163,73 @@ static void ssp_get_positions(int *acc, int *mag)
 }
 #endif /* CONFIG_SENSORS_SSP */
 
+#ifdef CONFIG_FELICA
+static int fpga_felica_status = 0;
+
+void set_fpga_felica_flag(int on)
+{
+	fpga_felica_status = on;
+	return;
+}
+
+static int get_fpga_felica_flag(void)
+{
+	return fpga_felica_status;
+}
+
+static int __init felica_init(void)
+{
+	struct pm_gpio felica_irq_cfg = {
+		.direction = PM_GPIO_DIR_IN,
+		.pull = PM_GPIO_PULL_NO,
+		.vin_sel = 2,
+		.function = PM_GPIO_FUNC_NORMAL,
+		.inv_int_pol = 0,
+	};
+	struct pm_gpio nfc_irq_cfg = {
+		.direction = PM_GPIO_DIR_IN,
+		.pull = PM_GPIO_PULL_NO,
+		.vin_sel = 2,
+		.function = PM_GPIO_FUNC_NORMAL,
+		.inv_int_pol = 0,
+	};
+	struct pm_gpio felica_rfs_cfg = {
+		.direction = PM_GPIO_DIR_IN,
+		.pull = PM_GPIO_PULL_NO,
+		.vin_sel = 2,
+		.function = PM_GPIO_FUNC_NORMAL,
+		.inv_int_pol = 0,
+	};
+
+	pm8xxx_gpio_config(GPIO_FELICA_INT, &felica_irq_cfg);
+
+	/* FELICA_INTU GPIO is changed */
+	if(system_rev > 0 && system_rev < 15) {
+		pm8xxx_gpio_config(GPIO_FELICA_INTU, 
+			&nfc_irq_cfg);
+	}
+	else {
+		gpio_tlmm_config(GPIO_CFG(GPIO_FELICA_INTU_REV06, 
+			GPIOMUX_FUNC_GPIO, GPIO_CFG_INPUT, 
+			GPIO_CFG_NO_PULL, GPIO_CFG_2MA), 1);
+	}
+	
+	pm8xxx_gpio_config(GPIO_FELICA_RFS, &felica_rfs_cfg);
+
+	if(ice_gpiox_set(FPGA_GPIO_FELICA_PON, 0))
+	{
+		pr_err(KERN_ERR " %s: FeliCa init failed in setting PON=0\n",__func__);
+	};
+	if(ice_gpiox_set(FPGA_GPIO_FELICA_HSEL, 0))
+	{
+		pr_err(KERN_ERR "%s: FeliCa init failed in setting HSEL=0\n",__func__);
+	};
+	
+	pr_info("[FELICA] %s done\n", __func__);
+	return 0;
+}
+#endif /* CONFIG_FELICA */
+
 #define NFC_SW_I2C
 /* if undef NFC_SW_I2C
  * have to add gpiomux_setting gsbi4
@@ -2247,6 +2314,26 @@ static struct i2c_board_info nfc_bcm2079x_info[] __initdata = {
 	},
 };
 #endif /* CONFIG_BCM2079X_NFC_I2C */
+
+#ifdef CONFIG_CAMERA_SW_I2C
+static struct i2c_gpio_platform_data s5k6b2yx_i2c_gpio_data = {
+	.sda_pin = 71,
+	.scl_pin = 70,
+	.udelay = 1,
+	.sda_is_open_drain      = 0,
+	.scl_is_open_drain      = 0,
+	.scl_is_output_only     = 0,
+};
+
+struct platform_device s5k6b2yx_i2c_gpio_device = {
+	.name = "i2c-gpio",
+	.id = MSM_CAMERA_SW_I2C_BUS_ID,
+	.dev = {
+		.platform_data  = &s5k6b2yx_i2c_gpio_data,
+	},
+};
+#endif
+
 #ifdef CONFIG_SEC_FPGA
 static struct regulator *barcode_vreg_2p85, *barcode_vreg_l33;
 static struct regulator *barcode_vreg_1p8;
@@ -2407,6 +2494,7 @@ struct barcode_emul_platform_data barcode_emul_info = {
 	.ir_vdd_onoff = irda_vdd_onoff,
 	.ir_led_poweron = irda_led_poweron,
 #endif
+//	.get_fpga_felica_flag = get_fpga_felica_flag,
 };
 
 static void barcode_gpio_config(void)
@@ -2918,7 +3006,13 @@ static struct i2c_board_info leds_i2c_devs[] __initdata = {
 	},
 };
 #endif
-
+#if defined(CONFIG_FELICA)
+static struct i2c_board_info felica_i2c_devs[] __initdata = {
+	{
+		I2C_BOARD_INFO("felica_i2c", (0x56 >> 1)),
+	},
+};
+#endif /* CONFIG_FELICA */
 #ifdef CONFIG_QSEECOM
 /* qseecom bus scaling */
 static struct msm_bus_vectors qseecom_clks_init_vectors[] = {
@@ -3150,6 +3244,174 @@ static struct platform_device qcedev_device = {
 		.platform_data = &qcedev_ce_hw_suppport,
 	},
 };
+#endif
+
+#ifdef CONFIG_ISDBTMM
+#define SPI_DMA_BASE_PHYS		0x16300000
+static int msm_qsd_spi_dma_config(void)
+{
+	void __iomem *tmm_base = 0;
+
+	tmm_base = ioremap(SPI_DMA_BASE_PHYS, PAGE_SIZE);
+	if (!tmm_base) {
+		pr_err("%s: Could not remap %x\n", __func__, SPI_DMA_BASE_PHYS);
+		pr_err("spi tmm remap failed\n");
+		return -ENOMEM;
+	}
+	iounmap(tmm_base);
+	
+	return 0;
+}
+
+/* I2C25 */
+static struct i2c_gpio_platform_data gpio_i2c_tmm25 = {
+	.scl_pin = GPIO_TMM_I2C_SCL,
+	.sda_pin = GPIO_TMM_I2C_SDA,
+};
+
+struct platform_device smtej113_device_i2c25 = {
+	.name = "i2c-gpio",
+	.id = 25,
+	.dev.platform_data = &gpio_i2c_tmm25,
+};
+
+static struct i2c_board_info i2c_smtej113_tmm[] __initdata = {
+	{
+		I2C_BOARD_INFO("smtej113_main1", 0xC2 >> 1),
+	},
+	{
+		I2C_BOARD_INFO("smtej113_main2", 0xC4 >> 1),
+	},
+	{
+		I2C_BOARD_INFO("smtej113_sub", 0xC0 >> 1),
+	},
+};
+
+static struct msm_spi_platform_data apq8064_qup_spi_gsbi4_pdata = {
+	.max_clock_speed = 27000000,
+	.dma_config      = msm_qsd_spi_dma_config,
+};
+
+static struct spi_board_info spi1_board_info[] __initdata = {
+	{
+		.modalias			= "tmmspidev",
+		.max_speed_hz		= 27 * 1000 * 1000,
+		.bus_num			= 1,
+		.chip_select		= 0,
+		.mode				= SPI_MODE_0,
+	}
+};
+
+static struct platform_device tmm_spi_device = {
+	.name			= "tmmspi",
+	.id 			= -1,
+};
+
+#if defined(CONFIG_TMM_CHG_CTRL)
+#define TMM_CHG_INPUT_CURRENT_LIMIT 900
+
+static void tmm_reduce_chg_curr(void)
+{
+	union power_supply_propval value;
+	int cable_type;
+	int input_curr_limit;
+	
+	tmm_chg_log(KERN_ALERT"%s: start!\n", __func__);
+
+	psy_do_property("battery", get, POWER_SUPPLY_PROP_ONLINE, value);
+
+	cable_type = value.intval;
+
+	if((cable_type != POWER_SUPPLY_TYPE_UNKNOWN) && (cable_type != POWER_SUPPLY_TYPE_BATTERY))
+	{
+		/* charging on! */
+		tmm_chg_log(KERN_ALERT"%s: charging on! cable_type=%d\n", __func__, cable_type);
+
+		psy_do_property("sec-charger", get, POWER_SUPPLY_PROP_CURRENT_NOW, value);
+
+		input_curr_limit = value.intval;
+
+		tmm_chg_log(KERN_ALERT"%s: input_curr_limit=%d\n", __func__, input_curr_limit);
+
+		if(input_curr_limit > TMM_CHG_INPUT_CURRENT_LIMIT)
+		{
+			value.intval = TMM_CHG_INPUT_CURRENT_LIMIT;
+
+			psy_do_property("sec-charger", set, POWER_SUPPLY_PROP_POWER_NOW, value);
+
+			tmm_chg_log(KERN_ALERT"%s: set input current limit %dmA!\n", __func__, value.intval);
+		}
+	}
+
+	return;
+
+};
+
+static void tmm_recover_chg_curr(void)
+{
+	union power_supply_propval value;
+	int cable_type;
+
+	tmm_chg_log(KERN_ALERT"%s: start!\n", __func__);
+	
+	psy_do_property("battery", get, POWER_SUPPLY_PROP_ONLINE, value);
+
+	cable_type = value.intval;
+
+	tmm_chg_log(KERN_ALERT"%s: cable_type=%d\n", __func__, cable_type);
+
+	value.intval = cable_type;
+
+	psy_do_property("sec-charger", set, POWER_SUPPLY_PROP_ONLINE, value);
+	
+	tmm_chg_log(KERN_ALERT"%s: POWER_SUPPLY_PROP_ONLINE!\n", __func__);
+
+	return;
+};
+
+static struct isdbtmm_platform_data isdbtmm_pdata = {
+	.tmm_reduce_chg_curr = tmm_reduce_chg_curr,
+	.tmm_recover_chg_curr = tmm_recover_chg_curr,
+};
+#endif
+
+static struct platform_device tmm_i2c_device = {
+	.name			= "tmmi2c",
+	.id 			= -1,
+#if defined(CONFIG_TMM_CHG_CTRL)
+	.dev.platform_data = &isdbtmm_pdata,
+#endif
+};
+
+void __init tmm_dev_init(void)
+{
+	int ret;
+	
+	ret = platform_device_register(&tmm_i2c_device);
+	
+	if (ret < 0) {
+		pr_err("%s: i2c platform_device_register returned error ret = %d\n", __func__, ret);
+		return;
+	}
+	
+	ret = platform_device_register(&tmm_spi_device);
+	
+	if (ret < 0) {
+		pr_err("%s: spi platform_device_register returned error ret = %d\n", __func__, ret);
+		return;
+	}
+	
+	i2c_register_board_info(25, i2c_smtej113_tmm,
+							ARRAY_SIZE(i2c_smtej113_tmm));
+
+	ret = spi_register_board_info(spi1_board_info,
+									ARRAY_SIZE(spi1_board_info));
+		
+	if (ret < 0)
+		pr_err("%s: spi_register_board_info returned error ret = %d\n", __func__, ret);
+
+	return;
+}
 #endif
 
 static struct mdm_vddmin_resource mdm_vddmin_rscs = {
@@ -3982,6 +4244,10 @@ static struct platform_device uv_device = {
 static struct platform_device *common_not_mpq_devices[] __initdata = {
 	&apq8064_device_qup_i2c_gsbi1,
 	&apq8064_device_qup_i2c_gsbi3,
+
+#ifndef CONFIG_ISDBTMM
+	&apq8064_device_qup_i2c_gsbi4,
+#endif
 };
 
 static struct platform_device *early_common_devices[] __initdata = {
@@ -4113,6 +4379,9 @@ static struct platform_device *common_devices[] __initdata = {
 	&msm8960_device_ebi1_ch1_erp,
 	&epm_adc_device,
 	&coresight_tpiu_device,
+#ifdef CONFIG_CAMERA_SW_I2C
+	&s5k6b2yx_i2c_gpio_device,
+#endif
 	&apq8064_device_qup_i2c_gsbi7,
 	&apq8064_device_qup_i2c_gsbi2,
 	&coresight_etb_device,
@@ -4157,11 +4426,20 @@ static struct platform_device *common_devices[] __initdata = {
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 	&ram_console_device,
 #endif
+
+#ifdef CONFIG_ISDBTMM
+	&apq8064_device_qup_spi_gsbi4,
+	&smtej113_device_i2c25,
+#endif
+
 };
 
 static struct platform_device *cdp_devices[] __initdata = {
 	&apq8064_device_uart_gsbi1,
 	&apq8064_device_uart_gsbi7,
+#ifdef CONFIG_FELICA
+	&apq8064_device_uart_gsbi3,
+#endif /* CONFIG_FELICA */
 	&msm_device_sps_apq8064,
 #ifdef CONFIG_MSM_ROTATOR
 	&msm_rotator_device,
@@ -4967,6 +5245,14 @@ static struct i2c_registry apq8064_i2c_devices[] __initdata = {
 		ARRAY_SIZE(ice4_fpga_i2c_board_info),
 	},
 #endif
+#if defined(CONFIG_FELICA)
+	{
+		I2C_SURF | I2C_FFA | I2C_LIQUID,
+		MSM_MHL_I2C_BUS_ID,
+		felica_i2c_devs,
+		ARRAY_SIZE(felica_i2c_devs),
+	},
+#endif /* CONFIG_FELICA */
 };
 
 #define SX150X_EXP1_INT_N	PM8921_MPP_IRQ(PM8921_IRQ_BASE, 9)
@@ -5049,19 +5335,36 @@ static void __init register_i2c_devices(void)
 	int i;
 
 #ifdef CONFIG_MSM_CAMERA
+#ifdef CONFIG_CAMERA_USE_GSBI7
+	struct i2c_registry apq8064_camera_i2c_devices = {
+		I2C_SURF | I2C_FFA | I2C_LIQUID | I2C_RUMI,
+		APQ_8064_GSBI7_QUP_I2C_BUS_ID,
+		apq8064_camera_board_info.board_info,
+		apq8064_camera_board_info.num_i2c_board_info,
+	};
+#else
 	struct i2c_registry apq8064_camera_i2c_devices = {
 		I2C_SURF | I2C_FFA | I2C_LIQUID | I2C_RUMI,
 		APQ_8064_GSBI4_QUP_I2C_BUS_ID,
 		apq8064_camera_board_info.board_info,
 		apq8064_camera_board_info.num_i2c_board_info,
 	};
-
+#endif
+#ifdef CONFIG_CAMERA_SW_I2C
+	struct i2c_registry apq8064_front_camera_i2c_devices = {
+		I2C_SURF | I2C_FFA | I2C_LIQUID | I2C_RUMI,
+		MSM_CAMERA_SW_I2C_BUS_ID,
+		apq8064_front_camera_board_info.board_info,
+		apq8064_front_camera_board_info.num_i2c_board_info,
+	};
+#else
 	struct i2c_registry apq8064_front_camera_i2c_devices = {
 		I2C_SURF | I2C_FFA | I2C_LIQUID | I2C_RUMI,
 		APQ_8064_GSBI7_QUP_I2C_BUS_ID,
 		apq8064_front_camera_board_info.board_info,
 		apq8064_front_camera_board_info.num_i2c_board_info,
 	};
+#endif
 #endif
 	/* Build the matching 'supported_machs' bitmask */
 	if (machine_is_apq8064_cdp())
@@ -5475,6 +5778,11 @@ static void __init apq8064_common_init(void)
 	apq8064_bt_init();
 #endif
 
+#ifdef CONFIG_ISDBTMM
+	apq8064_device_qup_spi_gsbi4.dev.platform_data =
+				&apq8064_qup_spi_gsbi4_pdata;
+    tmm_dev_init();
+#endif
 }
 
 static void __init apq8064_allocate_memory_regions(void)
@@ -5599,6 +5907,9 @@ static void __init samsung_jf_init(void)
 #if defined(CONFIG_BCM4335) || defined(CONFIG_BCM4335_MODULE)
 	brcm_wlan_init();
 #endif
+#ifdef CONFIG_FELICA
+	felica_init();
+#endif /* CONFIG_FELICA */
 }
 
 MACHINE_START(JF, "SAMSUNG JF")

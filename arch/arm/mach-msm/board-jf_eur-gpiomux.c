@@ -1665,6 +1665,108 @@ static struct msm_gpiomux_config apq8064_touch_irq_config[] = {
 };
 #endif
 
+#ifdef CONFIG_FELICA
+/* USE "GPIO_SHARED_I2C_SCL/SDA" 
+ * ("GPIO_MHL_SCL/SDA" sets initial configuration)
+ */
+static struct gpiomux_setting felica_i2c_sda_setting = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+};
+
+static struct gpiomux_setting felica_i2c_scl_setting = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+};
+
+static struct gpiomux_setting felica_uart_tx_setting = {
+	.func = GPIOMUX_FUNC_1,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+};
+
+static struct gpiomux_setting felica_uart_rx_setting = {
+	.func = GPIOMUX_FUNC_1,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+};
+/* USE FPGA_GPIO */
+static struct gpiomux_setting felica_rfs_setting = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+	.dir = GPIOMUX_IN,
+};
+
+static struct gpiomux_setting felica_intu_setting = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+	.dir = GPIOMUX_IN,
+};
+
+static struct gpiomux_setting felica_int_setting = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+	.dir = GPIOMUX_IN,
+};
+
+static struct msm_gpiomux_config apq8064_felica_configs[] __initdata = {
+	{
+		.gpio = GPIO_FELICA_I2C_SDA,/*I2C_SDA*/
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &felica_i2c_sda_setting,
+			[GPIOMUX_SUSPENDED] = &felica_i2c_sda_setting,
+		},
+	},
+	{
+		.gpio = GPIO_FELICA_I2C_SCL,/*I2C_SCL*/
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &felica_i2c_scl_setting,
+			[GPIOMUX_SUSPENDED] = &felica_i2c_scl_setting,
+		},
+	},
+	{
+		.gpio = GPIO_FELICA_UART_TX,/*2-pin UART_TX*/
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &felica_uart_tx_setting,
+			[GPIOMUX_SUSPENDED] = &felica_uart_tx_setting,
+		},
+	},
+	{
+		.gpio = GPIO_FELICA_UART_RX,/*2-pin UART_RX*/
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &felica_uart_rx_setting,
+			[GPIOMUX_SUSPENDED] = &felica_uart_rx_setting,
+		},
+	},
+	{
+		.gpio = GPIO_FELICA_RFS,/*RFS*/
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &felica_rfs_setting,
+			[GPIOMUX_SUSPENDED] = &felica_rfs_setting,
+		},
+	},
+	{
+		.gpio = GPIO_FELICA_INTU,/*INTU*/
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &felica_intu_setting,
+			[GPIOMUX_SUSPENDED] = &felica_intu_setting,
+		},
+	},
+	{
+		.gpio = GPIO_FELICA_INT,/*INT*/
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &felica_int_setting,
+			[GPIOMUX_SUSPENDED] = &felica_int_setting,
+		},
+	},
+};
+#endif /* CONFIG_FELICA */
+
 #ifdef CONFIG_MFD_MAX77693
 static struct gpiomux_setting muic_init_cfg = {
 	.func = GPIOMUX_FUNC_GPIO,
@@ -1827,6 +1929,59 @@ static struct msm_gpiomux_config mpq8064_uartdm_configs[] __initdata = {
 		},
 	},
 };
+#ifdef CONFIG_ISDBTMM
+static struct gpiomux_setting tmm_setting_input = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_DOWN,
+	.dir = GPIOMUX_IN,
+};
+
+static struct msm_gpiomux_config apq8064_tmm_configs[] __initdata = {
+	{
+		.gpio = 10, //GPIO_TMM_SPI_DO,
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &tmm_setting_input,
+			[GPIOMUX_SUSPENDED] = &tmm_setting_input,
+		},
+	},
+	{
+		.gpio = 11, //GPIO_TMM_SPI_DI,
+		.settings = {
+			[GPIOMUX_ACTIVE]	= &tmm_setting_input,
+			[GPIOMUX_SUSPENDED] = &tmm_setting_input,
+		},
+	},
+	{
+		.gpio = 12, //GPIO_TMM_SPI_CS,
+		.settings = {
+			[GPIOMUX_ACTIVE]	= &tmm_setting_input,
+			[GPIOMUX_SUSPENDED] = &tmm_setting_input,
+		},
+	},
+	{
+		.gpio = 13, //GPIO_TMM_SPI_CLK,
+		.settings = {
+			[GPIOMUX_ACTIVE]	= &tmm_setting_input,
+			[GPIOMUX_SUSPENDED] = &tmm_setting_input,
+		},
+	},
+	{
+		.gpio = 36, //GPIO_TMM_SPI_SDA,
+		.settings = {
+			[GPIOMUX_ACTIVE]	= &tmm_setting_input,
+			[GPIOMUX_SUSPENDED] = &tmm_setting_input,
+		},
+	},
+	{
+		.gpio = 37, //GPIO_TMM_SPI_SCL,
+		.settings = {
+			[GPIOMUX_ACTIVE]	= &tmm_setting_input,
+			[GPIOMUX_SUSPENDED] = &tmm_setting_input,
+		},
+	},
+};
+#endif /* CONFIG_ISDBTMM */
 
 void __init apq8064_init_gpiomux(void)
 {
@@ -1989,6 +2144,22 @@ void __init apq8064_init_gpiomux(void)
 				ARRAY_SIZE(apq8064_touch_irq_config));
 	}
 #endif
+
+#ifdef CONFIG_FELICA
+	/* FELICA_INTU GPIO is changed */
+	if(system_rev > 0 && system_rev < 15)
+		apq8064_felica_configs[5].gpio = GPIO_FELICA_INTU;
+	else
+		apq8064_felica_configs[5].gpio = GPIO_FELICA_INTU_REV06;
+
+	msm_gpiomux_install(apq8064_felica_configs,
+			ARRAY_SIZE(apq8064_felica_configs));
+#endif /* CONFIG_FELICA */
+#ifdef CONFIG_ISDBTMM
+	msm_gpiomux_install(apq8064_tmm_configs,
+			ARRAY_SIZE(apq8064_tmm_configs));
+#endif /* CONFIG_ISDBTMM */
+
 #ifdef CONFIG_MFD_MAX77693
 	msm_gpiomux_install(apq8064_muic_config,
 		ARRAY_SIZE(apq8064_muic_config));

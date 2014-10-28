@@ -37,6 +37,25 @@
 #define SHORT_BATTERY_STANDARD		100
 
 static unsigned int sec_bat_recovery_mode;
+#if defined(CONFIG_MACH_JF_DCM)
+static sec_charging_current_t charging_current_table[] = {
+	{1900,	1600,	200,	40*60},
+	{460,	0,	0,	0},
+	{460,	460,	200,	40*60},
+	{1900,	1600,	200,	40*60},
+	{460,	460,	200,	40*60},
+	{1000,	1000,	200,	40*60},
+	{1000,	1000,	200,	40*60},
+	{460,	460,	200,	40*60},
+	{1700,	1600,	200,	40*60},
+	{0,	0,	0,	0},
+	{650,	700,	200,	40*60},
+	{1900,	1600,	200,	40*60},
+	{0,	0,	0,	0},
+	{0,	0,	0,	0},
+	{460,	0,	0,	0},
+};
+#else
 static sec_charging_current_t charging_current_table[] = {
 	{1900,	1600,	200,	40*60},
 	{460,	0,	0,	0},
@@ -56,7 +75,7 @@ static sec_charging_current_t charging_current_table[] = {
 	{0,	0,	0,	0},
 	{460,	0,	0,	0},
 };
-
+#endif
 static bool sec_bat_adc_none_init(
 		struct platform_device *pdev) {return true; }
 static bool sec_bat_adc_none_exit(void) {return true; }
