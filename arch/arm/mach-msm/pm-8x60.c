@@ -1210,6 +1210,11 @@ void msm_pm_set_sleep_ops(struct msm_pm_sleep_ops *ops)
 		pm_sleep_ops = *ops;
 }
 
+void __init msm_pm_set_tz_retention_flag(unsigned int flag)
+{
+	msm_pm_retention_tz_call = flag;
+}
+
 static int __devinit msm_cpu_status_probe(struct platform_device *pdev)
 {
 	struct msm_pm_sleep_status_data *pdata;
