@@ -21,8 +21,12 @@
  */
 
 /* APQ8064 GPIO */
-#define GPIO_S_LED_I2C_SDA		 6
-#define GPIO_S_LED_I2C_SCL		 7
+#define GPIO_SHARED_I2C_SCL		 29
+#define GPIO_SHARED_I2C_SDA		 64
+#ifdef CONFIG_LEDS_AN30259A
+#define GPIO_S_LED_I2C_SCL		 GPIO_SHARED_I2C_SCL
+#define GPIO_S_LED_I2C_SDA		 GPIO_SHARED_I2C_SDA
+#endif
 #define GPIO_USB_I2C_SDA		10
 #define GPIO_USB_I2C_SCL		11
 #ifdef CONFIG_MFD_MAX77693
@@ -62,8 +66,8 @@
 #endif
 #if defined(CONFIG_VIDEO_MHL_V2)
 #define GPIO_MHL_RST                    1
-#define GPIO_MHL_SDA                    36
 #define GPIO_MHL_SCL                    37
+#define GPIO_MHL_SDA                    36
 #define GPIO_MHL_INT                    77
 #define GPIO_MHL_VSIL                    PM8921_GPIO_PM_TO_SYS(32)
 #endif
