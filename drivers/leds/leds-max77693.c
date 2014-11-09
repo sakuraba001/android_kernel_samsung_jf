@@ -39,7 +39,7 @@ struct max77693_led_data {
 	spinlock_t value_lock;
 	int brightness;
 	int test_brightness;
-#ifdef CONFIG_MACH_JF_DCM
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	int movie_brightness;
 #endif 
 };
@@ -97,7 +97,7 @@ static int max77693_set_bits(struct i2c_client *client, const u8 reg,
 	return ret;
 }
 
-#ifdef CONFIG_MACH_JF_DCM
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 static ssize_t max77693_show_movie_brightness(struct device *dev,
 				     struct device_attribute *devattr, char *buf)
 {
@@ -404,7 +404,7 @@ static int max77693_led_probe(struct platform_device *pdev)
 		pr_err("failed to create device file, %s\n",
 				dev_attr_rear_flash.attr.name);
 	}
- #ifdef CONFIG_MACH_JF_DCM
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	if (device_create_file(flash_dev, &dev_attr_movie_brightness) < 0) {
 		pr_err("failed to create device file, %s\n",
 				dev_attr_movie_brightness.attr.name);
@@ -439,7 +439,7 @@ static int __devexit max77693_led_remove(struct platform_device *pdev)
 	kfree(led_datas);
 
 	device_remove_file(flash_dev, &dev_attr_rear_flash);
-#ifdef CONFIG_MACH_JF_DCM
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	device_remove_file(flash_dev, &dev_attr_movie_brightness);
 #endif	
 	device_destroy(camera_class, 0);
