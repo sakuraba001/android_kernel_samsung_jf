@@ -2583,7 +2583,7 @@ static int msmsdcc_setup_vreg(struct msmsdcc_host *host, bool enable,
 #else /* VZW/SPT/USCC/KOR */
 			else if (system_rev >= BOARD_REV09 && host->pdev_id == 2)
 #endif
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 				ice_gpiox_set(FPGA_GPIO_TFLASH_LS_EN, 0);
 #elif defined(CONFIG_MACH_JF_SKT) || defined(CONFIG_MACH_JF_KTT) || defined(CONFIG_MACH_JF_LGT)
 				pm8xxx_mpp_config(GPIO_TFLASH_LS_EN, &tflash_ls_en_mpp_low);
@@ -2629,7 +2629,7 @@ static int msmsdcc_setup_vreg(struct msmsdcc_host *host, bool enable,
 #else /* VZW/SPT/USCC/KOR */
 		else if (system_rev >= BOARD_REV09 && host->pdev_id == 2)
 #endif
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 			ice_gpiox_set(FPGA_GPIO_TFLASH_LS_EN, 1);
 #elif defined(CONFIG_MACH_JF_SKT) || defined(CONFIG_MACH_JF_KTT) || defined(CONFIG_MACH_JF_LGT)
 			pm8xxx_mpp_config(GPIO_TFLASH_LS_EN, &tflash_ls_en_mpp_high);

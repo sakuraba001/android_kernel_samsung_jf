@@ -1556,7 +1556,7 @@ static int __devinit cypress_touchkey_probe(struct i2c_client *client,
 		cypress_touchkey_con_hw(info, true);
 	}
 
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	msleep(50);
 #endif
 

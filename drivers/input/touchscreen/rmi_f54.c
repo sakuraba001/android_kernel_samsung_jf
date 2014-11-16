@@ -4352,7 +4352,7 @@ static int synaptics_rmi4_f54_init(struct synaptics_rmi4_data *rmi4_data)
 	}
 
 #ifdef FACTORY_MODE
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	#define NUM_RX	28
 	#define NUM_TX	16
 

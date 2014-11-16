@@ -26,7 +26,7 @@
 #ifdef CONFIG_SEC_THERMISTOR
 /*Below adc table is same as batt_temp_adc table*/
 #if defined(CONFIG_MACH_JF)
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 static struct sec_therm_adc_table temper_table_ap[] = {
 	{25952,	 900},
 	{25984,	 890},
@@ -264,7 +264,7 @@ static int get_fusion3_siop_level(int temp)
 	static int prev_level;
 	int level = -1;
 
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	/* This is only for JPN JF-DCM model, currently the SIOP is not using this function.
 	    However, the JPN vendor(DoCoMo) wants to implement the Camera APP shutdown 
 	    functionality to avoid over-heat damage. For this, only JPN model gives thermistor value
@@ -311,7 +311,7 @@ static int get_fusion3_siop_level(int temp)
 	return level;
 }
 
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 static struct sec_therm_platform_data sec_therm_pdata = {
 	.adc_arr_size	= ARRAY_SIZE(temper_table_ap),
 	.adc_table	= temper_table_ap,

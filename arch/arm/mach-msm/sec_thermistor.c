@@ -147,7 +147,7 @@ static void notify_change_of_temperature(struct sec_therm_info *info)
 	int env_offset = 0;
 	int siop_level = -1;
 
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	snprintf(temp_buf, sizeof(temp_buf), "SUBTEMPERATURE=%d",
 		 info->curr_temperature);
 	envp[env_offset++] = temp_buf;

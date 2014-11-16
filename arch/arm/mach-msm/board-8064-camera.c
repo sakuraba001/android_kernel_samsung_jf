@@ -439,7 +439,7 @@ static void cam_ldo_power_on(void)
 			printk(KERN_DEBUG "error enabling regulator 8921_lvs5\n");
 	} else {
 		l35 = regulator_get(NULL, "8917_l35");
-#ifdef CONFIG_MACH_JF_DCM
+ #if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 		regulator_set_voltage(l35, 1850000, 1850000);
 #else
 		regulator_set_voltage(l35, 1800000, 1800000);

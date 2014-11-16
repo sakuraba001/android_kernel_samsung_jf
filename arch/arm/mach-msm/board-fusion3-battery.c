@@ -37,7 +37,7 @@
 #define SHORT_BATTERY_STANDARD		100
 
 static unsigned int sec_bat_recovery_mode;
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 static sec_charging_current_t charging_current_table[] = {
 	{1900,	1600,	200,	40*60},
 	{460,	0,	0,	0},
@@ -458,7 +458,7 @@ static bool sec_bat_get_temperature_callback(
 		union power_supply_propval *val) {return true; }
 static bool sec_fg_fuelalert_process(bool is_fuel_alerted) {return true; }
 
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 static const sec_bat_adc_table_data_t temp_table[] = {
 	{25893,	900},
 	{26142,	850},

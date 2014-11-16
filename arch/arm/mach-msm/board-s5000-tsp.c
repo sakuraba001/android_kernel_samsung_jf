@@ -279,7 +279,7 @@ void __init S5000_tsp_input_init(int version)
 			__func__, el_type, touch_type,
 			rmi4_platformdata.recovery_mode ? "recovery mode" : "normal mode");
 
-#if defined(CONFIG_MACH_JF_ATT) || defined(CONFIG_MACH_JF_TMO) || defined(CONFIG_MACH_JF_EUR)
+#if defined(CONFIG_MACH_JF_ATT) || defined(CONFIG_MACH_JF_TMO)
 	if(system_rev >= BOARD_REV08)  {
 		rmi4_platformdata.gpio = NEW_GPIO_TOUCH_IRQ;
 		ret = gpio_request(NEW_GPIO_TOUCH_IRQ, "tsp_int");
@@ -304,7 +304,7 @@ void __init S5000_tsp_input_init(int version)
 		i2c_register_board_info(APQ_8064_GSBI3_QUP_I2C_BUS_ID, bus2_i2c_devices,
 			ARRAY_SIZE(bus2_i2c_devices));
 	}
-#elif defined(CONFIG_MACH_JF_DCM)
+#elif defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
         rmi4_platformdata.gpio = NEW_GPIO_TOUCH_IRQ;
 		ret = gpio_request(NEW_GPIO_TOUCH_IRQ, "tsp_int");
 		if (ret != 0) {
