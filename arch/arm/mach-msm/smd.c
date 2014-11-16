@@ -1869,7 +1869,8 @@ int smd_named_open_on_edge(const char *name, uint32_t edge,
 		return -ENODEV;
 	}
 
-	SMD_DBG("smd_open('%s', %p, %p)\n", name, priv, notify);
+//	SMD_DBG("smd_open('%s', %p, %p)\n", name, priv, notify);
+	printk(KERN_ERR "smd_open('%s', %p, %p)\n", name, priv, notify);
 
 	ch = smd_get_channel(name, edge);
 	if (!ch) {
@@ -1880,6 +1881,7 @@ int smd_named_open_on_edge(const char *name, uint32_t edge,
 				(edge == ch->type)) {
 				/* channel exists, but is being closed */
 				spin_unlock_irqrestore(&smd_lock, flags);
+				printk(KERN_ERR "channel exists, but is being closed - closing list");
 				return -EAGAIN;
 			}
 		}
@@ -1890,6 +1892,7 @@ int smd_named_open_on_edge(const char *name, uint32_t edge,
 				(edge == ch->type)) {
 				/* channel exists, but is being closed */
 				spin_unlock_irqrestore(&smd_lock, flags);
+				printk(KERN_ERR "channel exists, but is being closed - closing workqueue");
 				return -EAGAIN;
 			}
 		}

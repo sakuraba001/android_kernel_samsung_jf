@@ -63,7 +63,8 @@ static int restart_mode;
 #ifndef CONFIG_SEC_DEBUG
 void *restart_reason;
 #endif
-
+int kernel_sec_get_debug_level(void);
+#define KERNEL_SEC_DEBUG_LEVEL_LOW      (0x574F4C44)
 int pmic_reset_irq;
 static void __iomem *msm_tmr0_base;
 
@@ -200,6 +201,30 @@ static void cpu_power_off(void *data)
 		;
 }
 
+static int irq_enabled;
+static int status;
+
+int resout_irq_control(int enable)
+{
+	if (!irq_enabled)
+		return -1;
+
+	if (enable ^ status) {
+		if (enable) {
+			enable_irq(pmic_reset_irq);
+			status = 1;
+			pr_info("%s : %d\n", __func__, status);
+		} else {
+			disable_irq_nosync(pmic_reset_irq);
+			status = 0;
+			pr_info("%s : %d\n", __func__, status);
+		}
+	} else
+		return -1;
+
+	return 0;
+}
+
 static irqreturn_t resout_irq_handler(int irq, void *dev_id)
 {
 	pr_warn("%s PMIC Initiated shutdown\n", __func__);
@@ -315,8 +340,6 @@ void msm_restart(char mode, const char *cmd)
 #ifdef CONFIG_SEC_DEBUG
 		} else if (!strncmp(cmd, "sec_debug_hw_reset", 18)) {
 			__raw_writel(0x776655ee, restart_reason);
-		} else if (!strncmp(cmd, "sec_debug_low_panic", 19)) {
-			__raw_writel(0x776655dd, restart_reason);
 #endif
 		} else if (!strncmp(cmd, "download", 8)) {
 			__raw_writel(0x12345671, restart_reason);
@@ -349,7 +372,6 @@ reset:
 		__raw_writel(0x12345678, restart_reason);
 	}
 #endif
-	printk(KERN_NOTICE " msm_restart restart_reason : 0x%08x\n", readl(restart_reason));
 	__raw_writel(0, msm_tmr0_base + WDT0_EN);
 	if (!(machine_is_msm8x60_fusion() || machine_is_msm8x60_fusn_ffa())) {
 		mb();
@@ -383,7 +405,7 @@ static int __init msm_pmic_restart_init(void)
 {
 	int rc;
 
-#ifdef CONFIG_MACH_JF_VZW
+#if defined(CONFIG_MACH_JF_VZW) || defined(CONFIG_MACH_MELIUS)
 	return 0;
 #else
 	if (kernel_sec_get_debug_level() != KERNEL_SEC_DEBUG_LEVEL_LOW)
@@ -396,6 +418,8 @@ static int __init msm_pmic_restart_init(void)
 					"restart_from_pmic", NULL);
 		if (rc < 0)
 			pr_err("pmic restart irq fail rc = %d\n", rc);
+		irq_enabled = 1;
+		status = 1;
 	} else {
 		pr_warn("no pmic restart interrupt specified\n");
 	}

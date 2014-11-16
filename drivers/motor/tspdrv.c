@@ -240,7 +240,11 @@ static const struct file_operations fops = {
 
 #ifndef IMPLEMENT_AS_CHAR_DRIVER
 static struct miscdevice miscdev = {
+#if defined(CONFIG_MACH_JFVE_EUR_LTE)
+	.minor =    MISC_TSPDRV_MINOR,
+#else
 	.minor =    MISC_DYNAMIC_MINOR,
+#endif
 	.name =     MODULE_NAME,
 	.fops =     &fops
 };
@@ -597,6 +601,7 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case TSPDRV_MAGIC_NUMBER:
+	case TSPDRV_SET_MAGIC_NUMBER:
 		filp->private_data = (void *)TSPDRV_MAGIC_NUMBER;
 		break;
 
