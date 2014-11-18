@@ -699,6 +699,16 @@ static struct msm_gpiomux_config sensorhub_configs[] __initdata = {
 	},
 };
 
+static struct msm_gpiomux_config nfc_firmware_configs[] __initdata = {
+	{
+		.gpio = 70,
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &mcu_chg_cfg,
+			[GPIOMUX_SUSPENDED] = &mcu_chg_cfg,
+		},
+	},
+};
+
 static struct msm_gpiomux_config apq8064_gsbi_configs[] __initdata = {
 	{
 		.gpio      = 8,			/* GSBI3 I2C QUP SDA */
