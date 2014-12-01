@@ -21,8 +21,12 @@
  */
 
 /* APQ8064 GPIO */
-#define GPIO_S_LED_I2C_SDA		 6
-#define GPIO_S_LED_I2C_SCL		 7
+#define GPIO_SHARED_I2C_SCL		 29
+#define GPIO_SHARED_I2C_SDA		 64
+#ifdef CONFIG_LEDS_AN30259A
+#define GPIO_S_LED_I2C_SCL		 GPIO_SHARED_I2C_SCL
+#define GPIO_S_LED_I2C_SDA		 GPIO_SHARED_I2C_SDA
+#endif
 #define GPIO_USB_I2C_SDA		10
 #define GPIO_USB_I2C_SCL		11
 #ifdef CONFIG_MFD_MAX77693
@@ -53,6 +57,8 @@
 #define GPIO_MCU_NRST		PM8921_GPIO_PM_TO_SYS(27)
 #define GPIO_MCU_CHG			69
 #ifdef CONFIG_SEC_FPGA
+#define GPIO_FPGA_I2C_SCL               44
+#define GPIO_FPGA_I2C_SDA               45
 #define GPIO_FPGA_CRESET_B              31
 #define GPIO_FPGA_CDONE                 38
 #define GPIO_FPGA_SPI_EN                43
@@ -60,11 +66,35 @@
 #endif
 #if defined(CONFIG_VIDEO_MHL_V2)
 #define GPIO_MHL_RST                    1
-#define GPIO_MHL_SDA                    36
 #define GPIO_MHL_SCL                    37
+#define GPIO_MHL_SDA                    36
 #define GPIO_MHL_INT                    77
 #define GPIO_MHL_VSIL                    PM8921_GPIO_PM_TO_SYS(32)
 #endif
+
+#ifdef CONFIG_FELICA
+#define GPIO_FELICA_UART_TX		6
+#define GPIO_FELICA_UART_RX		7
+#define GPIO_FELICA_I2C_SCL		GPIO_SHARED_I2C_SCL
+#define GPIO_FELICA_I2C_SDA		GPIO_SHARED_I2C_SDA
+#define GPIO_FELICA_RFS		PM8921_GPIO_PM_TO_SYS(11)
+#define GPIO_FELICA_INTU	PM8921_GPIO_PM_TO_SYS(25)
+#define GPIO_FELICA_INTU_REV06	20
+#define GPIO_FELICA_INT		PM8921_GPIO_PM_TO_SYS(29)
+#define GPIO_FELICA_PON		
+#endif
+
+#if defined(CONFIG_ISDBTMM)
+#define GPIO_TMM_SPI_DO		10
+#define GPIO_TMM_SPI_DI		11
+#define GPIO_TMM_SPI_CS		12
+#define GPIO_TMM_SPI_CLK		13
+#define GPIO_TMM_I2C_SDA		36
+#define GPIO_TMM_I2C_SCL		37
+#define GPIO_TMM_INT			PM8921_GPIO_PM_TO_SYS(13)
+#define GPIO_TMM_ANT_DET	    PM8921_GPIO_PM_TO_SYS(14)
+#endif
+
 
 /* PM8921 GPIO */
 #define PMIC_GPIO_VPS_SOUND_EN		9
@@ -131,5 +161,15 @@ enum {
 	FPGA_GPIO_06,
 	FPGA_GPIO_07,
 	FPGA_GPIO_MHL_RST,
-	FPGA_GPIO_VPS_SOUND_EN,
+	FPGA_GPIO_MICBIAS_EN = 2,
+	FPGA_GPIO_TMM_RST,
+	FPGA_GPIO_VPS_SOUND_EN = 5,
+	FPGA_GPIO_OTG_EN,
+	FPGA_GPIO_EAR_MICBIAS_EN,
+	FPGA_GPIO_TFLASH_LS_EN,
+	FPGA_GPIO_FELICA_HSEL = 10,
+	FPGA_GPIO_FELICA_PON,
+	FPGA_GPIO_13 = 13,
+	FPGA_GPIO_TMM_PWR_EN,
+	FPGA_GPIO_UART_SEL,
 };
