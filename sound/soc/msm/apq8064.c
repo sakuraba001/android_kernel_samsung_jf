@@ -428,7 +428,7 @@ static int msm_mainmic_bias_event(struct snd_soc_dapm_widget *w,
 {
 	pr_debug("%s:GPIO BIAS UP!!!Event %d && SND_SOC_DAPM:%d\n",
 		__func__, (event), SND_SOC_DAPM_EVENT_ON(event));
-#if defined(CONFIG_MACH_JF_DCM)
+#if defined(CONFIG_MACH_JF_DCM) || defined(CONFIG_MACH_JF_EUR)
 	ice_gpiox_set(FPGA_GPIO_MICBIAS_EN, SND_SOC_DAPM_EVENT_ON(event));
 #endif
 #if !defined(CONFIG_MACH_MELIUS)
